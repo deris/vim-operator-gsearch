@@ -1,44 +1,13 @@
-" default values for settings {{{
-if !exists("g:gsearch_ag_command")
-  let g:gsearch_ag_command = 'Ag! -Q'
-endif
-
-if !exists("g:gsearch_ack_command")
-  let g:gsearch_ack_command = 'Ack! -Q'
-endif
-
-if !exists("g:gsearch_ctrlsf_command")
-  let g:gsearch_ctrlsf_command = 'CtrlSF -Q'
-endif
-"}}}
 " operators {{{
-function! operator#gsearch#ggrep(motion_wise)
-  call s:search_cmd_quote('Ggrep', a:motion_wise)
-endfunction
+for name in keys(g:gsearch_config)
+  let config = g:gsearch_config[name]
+  let command = config['command']
+  let noquote = get(config, 'noquote', 0)
 
-function! operator#gsearch#ag_word(motion_wise)
-  call s:search_cmd_quote(g:gsearch_ag_command . ' -w', a:motion_wise)
-endfunction
-
-function! operator#gsearch#ag(motion_wise)
-  call s:search_cmd_quote(g:gsearch_ag_command, a:motion_wise)
-endfunction
-
-function! operator#gsearch#ack(motion_wise)
-  call s:search_cmd_quote(g:gsearch_ack_command, a:motion_wise)
-endfunction
-
-function! operator#gsearch#ctrlsf(motion_wise)
-  call s:search_cmd_quote(g:gsearch_ctrlsf_command, a:motion_wise)
-endfunction
-
-function! operator#gsearch#dash(motion_wise)
-  call s:search_cmd('Dash', a:motion_wise)
-endfunction
-
-function! operator#gsearch#helpgrep(motion_wise)
-  call s:search_cmd('helpgrep', a:motion_wise)
-endfunction
+  execute printf("function! operator#gsearch#%s(motion_wise)\n", substitute(name, '-', '_', 'g')) .
+    \     printf("  call s:search_cmd%s('%s', a:motion_wise)\n", noquote ? '' : '_quote', command) .
+    \            "endfunction\n"
+endfor
 "}}}
 " internal {{{
 function! s:search_cmd_quote(cmd, motion_wise)
